@@ -42,7 +42,6 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{secrets.EC2_USERNAME}}
           password: ${{ secrets.EC2_PRIVATE_KEY }}
-          port: ${{ secrets.PORT }}
           script_stop: true
           script: |
             rm -rf /home/ubuntu/common-be/current
