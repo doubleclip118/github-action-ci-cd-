@@ -24,8 +24,9 @@ jobs:
       - name: 테스트 및 커버리지 체크
         run: |
          ./gradlew clean build jacocoTestReport
-          ls build/reports/jacoco/test/          
-          COVERAGE=$(awk -F ',' '/^TOTAL/ {print $4}' build/reports/jacoco/test/jacocoTestReport.csv | tail -n 1)
+          ls build/reports/jacoco/test/
+          cat build/reports/jacoco/test/jacocoTestReport.csv          
+           COVERAGE=$(awk -F ',' '/^TOTAL/ {print $4}' build/reports/jacoco/test/jacocoTestReport.csv | tail -n 1)
          echo "Test coverage is $COVERAGE%"
          if (( $(echo "$COVERAGE < 70.0" | bc -l) )); then
            echo "Test coverage is below 70%! Failing build."
