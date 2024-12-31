@@ -20,6 +20,15 @@ jobs:
 
       - name: application-secret.properties 파일 만들기
         run: echo "${{ secrets.APPLICATION_SECRET_PROPERTIES }}" > ./src/main/resources/application-secret.properties
+      - name: 테스트 및 커버리지 체크
+        run: |
+         ./gradlew clean build jacocoTestReport
+         COVERAGE=$(awk -F ',' '/^TOTAL/ {print $4}' build/reports/jacoco/test/jacocoTestReport.csv | tail -n 1)
+         echo "Test coverage is $COVERAGE%"
+         if (( $(echo "$COVERAGE < 70.0" | bc -l) )); then
+           echo "Test coverage is below 70%! Failing build."
+           exit 1
+         fi
 
       - name: 테스트 및 빌드하기
         run: ./gradlew clean build
