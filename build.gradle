@@ -40,6 +40,6 @@ jacocoTestReport {
 	reports {
 		html.required = true // HTML 리포트 활성화
 		xml.required = true  // XML 리포트 활성화
-		csv.required = false // CSV 리포트 비활성화
+		csv.required = true // CSV 리포트 비활성화
 	}
 }
