@@ -2,7 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.4.1'
 	id 'io.spring.dependency-management' version '1.1.7'
-	id 'jacoco' // Jacoco 플러그인 추가
+	id 'jacoco'
 }
 
 group = 'com.example'
@@ -32,14 +32,14 @@ tasks.named('test') {
 }
 
 jacoco {
-	toolVersion = "0.8.10" // Jacoco 버전 설정
+	toolVersion = "0.8.10"
 }
 
 jacocoTestReport {
 	dependsOn(tasks.named('test')) // 테스트 실행 후 리포트 생성
 	reports {
-		html.required = true // HTML 리포트 활성화
-		xml.required = true  // XML 리포트 활성화
-		csv.required = true // CSV 리포트 비활성화
+		html.required = true
+		xml.required = true
+		csv.required = true
 	}
 }
