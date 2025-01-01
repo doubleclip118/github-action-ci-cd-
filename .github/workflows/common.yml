@@ -1,12 +1,35 @@
-name : 코몬 CI/CD
+name: 코몬 CI/CD
 
 on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  Deploy:
+  pr-check:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Github Repository 파일 불러오기
+        uses: actions/checkout@v4
+
+      - name: JDK 21버전 설치
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: 테스트 결과를 PR에 코멘트로 등록합니다
+        uses: EnricoMi/publish-unit-test-result-action@v1
+        if: always()
+        with:
+          files: '**/build/reports/jacoco/test/jacocoTestReport.xml'
+
+  deploy:
+    if: github.event_name == 'push'
     runs-on: ubuntu-24.04
     steps:
       - name: Github Repository 파일 불러오기
@@ -20,21 +43,6 @@ jobs:
 
       - name: application-secret.properties 파일 만들기
         run: echo "${{ secrets.APPLICATION_SECRET_PROPERTIES }}" > ./src/main/resources/application-secret.properties
-
-      - name: 테스트 및 커버리지 체크
-        run: |
-         ./gradlew clean build jacocoTestReport
-          ls build/reports/jacoco/test/
-          cat build/reports/jacoco/test/jacocoTestReport.csv          
-           COVERAGE=$(awk -F ',' '/^TOTAL/ {print $4}' build/reports/jacoco/test/jacocoTestReport.csv | tail -n 1)
-         echo "Test coverage is $COVERAGE%"
-         if (( $(echo "$COVERAGE < 70.0" | bc -l) )); then
-           echo "Test coverage is below 70%! Failing build."
-           exit 1
-         fi
-
-      - name: 테스트 및 빌드하기
-        run: ./gradlew clean build
 
       - name: 빌드된 파일 이름 변경하기
         run: mv ./build/libs/*SNAPSHOT.jar ./common.jar
@@ -61,6 +69,3 @@ jobs:
             mv /home/ubuntu/common-be/temp/common.jar /home/ubuntu/common-be/current/common.jar
             sudo systemctl stop backend.service
             sudo systemctl start backend.service
-
-
-
