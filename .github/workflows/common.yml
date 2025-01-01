@@ -44,6 +44,12 @@ jobs:
       - name: application-secret.properties 파일 만들기
         run: echo "${{ secrets.APPLICATION_SECRET_PROPERTIES }}" > ./src/main/resources/application-secret.properties
 
+      - name: 테스트 및 빌드하기
+        run: ./gradlew clean build
+
+      - name: 빌드된 파일 이름 변경하기
+        run: mv ./build/libs/*SNAPSHOT.jar ./common.jar
+
       - name: 빌드된 파일 이름 변경하기
         run: mv ./build/libs/*SNAPSHOT.jar ./common.jar
 
