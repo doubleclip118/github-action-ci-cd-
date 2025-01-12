@@ -31,7 +31,7 @@ jobs:
           files: '**/build/reports/jacoco/test/jacocoTestReport.xml'
 
   staging-deploy:
-    if: github.ref == 'refs/heads/develop'
+    if: github.event_name == 'push' && github.repository == 'your-main-repo-owner/your-main-repo-name' && github.ref == 'refs/heads/develop'
     runs-on: ubuntu-24.04
     steps:
       - name: Github Repository 파일 불러오기
@@ -50,7 +50,7 @@ jobs:
         run: ./gradlew clean build
 
       - name: 빌드된 파일 이름 변경하기
-        run: mv ./build/libs/*SNAPSHOT.jar ./staging.jar
+        run: mv ./build/libs/*SNAPSHOT.jar ./backend.jar
 
       - name: SCP로 스테이징 서버에 빌드 파일 전송하기
         uses: appleboy/scp-action@v0.1.7
@@ -58,7 +58,7 @@ jobs:
           host: ${{ secrets.STAGING_EC2_HOST }}
           username: ${{ secrets.STAGING_EC2_USERNAME }}
           key: ${{ secrets.STAGING_EC2_PRIVATE_KEY }}
-          source: staging.jar
+          source: backend.jar
           target: /home/ubuntu/staging-be/temp
 
       - name: SSH로 스테이징 서버에 배포
@@ -70,13 +70,12 @@ jobs:
           script_stop: true
           script: |
             rm -rf /home/ubuntu/staging-be/current
-            mkdir /home/ubuntu/staging-be/current
-            mv /home/ubuntu/staging-be/temp/staging.jar /home/ubuntu/staging-be/current/staging.jar
-            sudo systemctl stop staging-backend.service
-            sudo systemctl start staging-backend.service
+            mkdir -p /home/ubuntu/staging-be/current
+            mv /home/ubuntu/staging-be/temp/backend.jar /home/ubuntu/staging-be/current/backend.jar
+            sudo systemctl restart backend.service
 
   production-deploy:
-    if: github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.repository == 'your-main-repo-owner/your-main-repo-name' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     steps:
       - name: Github Repository 파일 불러오기
@@ -95,7 +94,7 @@ jobs:
         run: ./gradlew clean build
 
       - name: 빌드된 파일 이름 변경하기
-        run: mv ./build/libs/*SNAPSHOT.jar ./production.jar
+        run: mv ./build/libs/*SNAPSHOT.jar ./backend.jar
 
       - name: SCP로 운영 서버에 빌드 파일 전송하기
         uses: appleboy/scp-action@v0.1.7
@@ -103,7 +102,7 @@ jobs:
           host: ${{ secrets.PRODUCTION_EC2_HOST }}
           username: ${{ secrets.PRODUCTION_EC2_USERNAME }}
           key: ${{ secrets.PRODUCTION_EC2_PRIVATE_KEY }}
-          source: production.jar
+          source: backend.jar
           target: /home/ubuntu/common-be/temp
 
       - name: SSH로 운영 서버에 배포
@@ -115,7 +114,6 @@ jobs:
           script_stop: true
           script: |
             rm -rf /home/ubuntu/common-be/current
-            mkdir /home/ubuntu/common-be/current
-            mv /home/ubuntu/common-be/temp/production.jar /home/ubuntu/common-be/current/production.jar
-            sudo systemctl stop backend.service
-            sudo systemctl start backend.service
+            mkdir -p /home/ubuntu/common-be/current
+            mv /home/ubuntu/common-be/temp/backend.jar /home/ubuntu/common-be/current/backend.jar
+            sudo systemctl restart backend.service
